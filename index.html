@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link href='https://fonts.googleapis.com/css?family=Nobile:700,400' rel='stylesheet' type='text/css'>
+<link href='https://fonts.googleapis.com/css?family=Gafata|Open+Sans:300' rel='stylesheet' type='text/css'>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+<link href="https://vjs.zencdn.net/7.4.1/video-js.css" rel="stylesheet">
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js" type="text/javascript"></script>
+<script src='https://vjs.zencdn.net/7.4.1/video.js'></script>
+<script src="config.js"></script>
+<script src="script.js"></script>
+
+</head>
+<body>
+
+<div class="row">
+  <div class="video-container col-xs-9">
+    <video width="400" id="video-box" class='video-js' controls>
+      <source src="https://www.dl.dropboxusercontent.com/s/eirjhecnnnx3tqr/3_19_19_synced_Large.mp4" type="video/mp4">
+      Your browser does not support HTML5 video.
+    </video>
+    <div class="overlay-desc">
+      <div class="row overlay-desc">
+        <div class="col-md-2">West</div>
+        <div class="col-md-4">North</div>
+        <div class="col-md-3">East</div>
+        <div class="col-md-3">South</div>
+      </div>
+    </div>
+    </div>
+    <div id="sidebar" class="col-xs-3 sidebar">
+      <h3> Current localized sources: </h3>
+    </div>
+</div>
+
+
+</body>
+</html>
