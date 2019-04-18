@@ -35,7 +35,7 @@ $( document ).ready(function() {
     var source = localizedSources[sourceIndex];
     $("#sidebar").append(
       '<br> <div id=' + 'source' + sourceIndex + ' class="sourceBox"> <strong> Source ' + localizedSources.length + ': </strong>' +
-      '<input type="checkbox" name="outOfFrame" class="sourceOption"> Object now out of frame  ' +
+      '<input type="checkbox" name="outOfFrame" class="sourceOption"> Object not making sound  ' +
       '<input type="checkbox" name="deleted" class="sourceOption">Delete source' +
       '<br>' + '<span id="history0"> Relative position to video box at time ' + parseFloat(source.history[0].time).toFixed(NUM_DECIMAL) + ': ' +
       '(' + parseFloat(source.history[0].x).toFixed(NUM_DECIMAL) + ', ' + parseFloat(source.history[0].y).toFixed(NUM_DECIMAL) + ') </span> </div>'
@@ -105,6 +105,7 @@ $( document ).ready(function() {
 
   $("#video-box").click(function(e) {
     e.preventDefault();
+    $("#video-box")[0].pause();
     var offset = $(this).offset();
     var width = $(this).width();
     var height = $(this).height();

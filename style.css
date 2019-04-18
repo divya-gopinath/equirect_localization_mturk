@@ -6,6 +6,10 @@ html {
   overflow-y: scroll;
 }
 
+.sidebar {
+  font-family: 'Roboto', sans-serif;
+}
+
 .video-js {
     width: 100% !important;
     position: relative !important;
@@ -26,7 +30,6 @@ video {
   text-align: center;
   font-size: 2vw;
   color: white;
-  font-family: 'Nobile', sans-serif;
 }
 
 .overlay-desc {
@@ -44,7 +47,6 @@ video {
 
 body {
   color: white;
-  font-family: 'Open Sans', sans-serif;
   font-size: 1.1rem;
   line-height: 1.7rem;
 }
