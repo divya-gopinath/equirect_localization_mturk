@@ -35,11 +35,18 @@ $( document ).ready(function() {
     var source = localizedSources[sourceIndex];
     $("#sidebar").append(
       '<br> <div id=' + 'source' + sourceIndex + ' class="sourceBox"> <strong> Source ' + localizedSources.length + ': </strong>' +
+      '<input name="objectName" placeholder="Optional object name" class="sourceObjectName"><br>'+
       '<input type="checkbox" name="outOfFrame" class="sourceOption"> Object not making sound  ' +
       '<input type="checkbox" name="deleted" class="sourceOption">Delete source' +
       '<br>' + '<span id="history0"> Relative position to video box at time ' + parseFloat(source.history[0].time).toFixed(NUM_DECIMAL) + ': ' +
       '(' + parseFloat(source.history[0].x).toFixed(NUM_DECIMAL) + ', ' + parseFloat(source.history[0].y).toFixed(NUM_DECIMAL) + ') </span> </div>'
     );
+    $('.sourceObjectName').on("input", function(e) {
+      var sourceIndexString = $(this).parent().attr('id').toString();
+      var sourceIndex = parseInt(sourceIndexString[sourceIndexString.length-1]);
+      var source = localizedSources[sourceIndex];
+      source.name = $(this).val();
+    });
     $('.sourceOption').unbind('change');
     $('.sourceOption').change(function(e) {
       var checkboxType = $(this).attr('name');
@@ -118,6 +125,7 @@ $( document ).ready(function() {
       "history" : [ localized_point ],
       "deleted" : false,
       "outOfFrame" : false,
+      "name" : null,
       "index" : dot_count
     };
     localizedSources.push(object_history);
