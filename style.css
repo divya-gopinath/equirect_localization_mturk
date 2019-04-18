@@ -2,6 +2,10 @@ body {
   background: #333;
 }
 
+html {
+  overflow-y: scroll;
+}
+
 .video-js {
     width: 100% !important;
     position: relative !important;
