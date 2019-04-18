@@ -1,8 +1,33 @@
 var localizedSources = [];
+var lastPausedTime = 0;
 
 $( document ).ready(function() {
-  // Manage random colors of dots
-  console.log(randomColor());
+  var onTimeUpdate = function() {
+    var time = $("#video-box")[0].currentTime;
+    if (time - lastPausedTime > PAUSE_THRESHOLD) {
+      lastPausedTime = time;
+      $("#video-box")[0].pause();
+    }
+  }
+  $("#video-box").bind('timeupdate', onTimeUpdate);
+  // Remove redundancy if one exists (object localized twice on same timestep)
+  var addSourceHistoryNoRedundancy = function(sourceIndex, datapoint) {
+    var source = localizedSources[sourceIndex];
+    var redundantIndex = null;
+    $.each(source.history, function(index, element) {
+      if (element.time == datapoint.time) {
+        redundantIndex = index;
+      }
+    });
+    if (redundantIndex != null) {
+      source.history[redundantIndex] = datapoint;
+      editSidebarWithoutAddition(sourceIndex, redundantIndex);
+    } else {
+      source.history.push(datapoint);
+      editSidebarWithAddition(sourceIndex);
+    }
+    return redundantIndex;
+  };
 
   // Add new dot to sidebar
   var appendSidebar = function() {
@@ -10,36 +35,45 @@ $( document ).ready(function() {
     var source = localizedSources[sourceIndex];
     $("#sidebar").append(
       '<br> <div id=' + 'source' + sourceIndex + ' class="sourceBox"> <strong> Source ' + localizedSources.length + ': </strong>' +
-      '<input type="checkbox" name="outOfFrame"> Object now out of frame  ' +
-      '<input type="checkbox" name="deleted">Delete source' +
+      '<input type="checkbox" name="outOfFrame" class="sourceOption"> Object now out of frame  ' +
+      '<input type="checkbox" name="deleted" class="sourceOption">Delete source' +
       '<br>' + '<span id="history0"> Relative position to video box at time ' + parseFloat(source.history[0].time).toFixed(NUM_DECIMAL) + ': ' +
       '(' + parseFloat(source.history[0].x).toFixed(NUM_DECIMAL) + ', ' + parseFloat(source.history[0].y).toFixed(NUM_DECIMAL) + ') </span> </div>'
     );
-    $(':checkbox').change(function() {
+    $('.sourceOption').unbind('change');
+    $('.sourceOption').change(function(e) {
       var checkboxType = $(this).attr('name');
       var sourceIndexString = $(this).parent().attr('id').toString();
       var sourceIndex = parseInt(sourceIndexString[sourceIndexString.length-1]);
       var source = localizedSources[sourceIndex];
       var dotId = "dot" + sourceIndex;
+      console.log(checkboxType);
+      console.log(source);
       if(checkboxType=="deleted") {
         if (source.deleted) {
           source.deleted = false;
           $(this).parent().css("text-decoration", "");
           $(this).parent().css("color", "black");
+          $("#" + dotId).show();
         } else {
           source.deleted = true;
           $(this).parent().css("text-decoration", "line-through");
           $(this).parent().css("color", "gray");
+          $("#" + dotId).hide();
         }
       } else if (checkboxType=="outOfFrame") {
         source.outOfFrame = !source.outOfFrame;
+        if (source.outOfFrame || source.deleted) {
+          $("#" + dotId).hide();
+        } else {
+          $("#" + dotId).show();
+        }
       }
-      $("#" + dotId).toggle();
     });
   };
 
   // Update the object history of a dot
-  var editSidebar = function(sourceIndex) {
+  var editSidebarWithAddition = function(sourceIndex) {
     var source = localizedSources[sourceIndex];
     var historyIndex = source.history.length - 1;
     var lastHistory = source.history[historyIndex];
@@ -47,6 +81,14 @@ $( document ).ready(function() {
       '<br> <span id=history' + historyIndex + '> Relative position to video box at time ' + parseFloat(lastHistory.time).toFixed(2) + ': ' +
       '(' + parseFloat(lastHistory.x).toFixed(NUM_DECIMAL) + ', ' + parseFloat(lastHistory.y).toFixed(NUM_DECIMAL) + ') </span>'
     );
+  };
+
+  var editSidebarWithoutAddition = function(sourceIndex, historyIndex) {
+    var source = localizedSources[sourceIndex];
+    var history = source.history[historyIndex];
+    var newHtmlString = '<span id=history' + historyIndex + '> Relative position to video box at time ' + parseFloat(history.time).toFixed(2) + ': ' +
+    '(' + parseFloat(history.x).toFixed(NUM_DECIMAL) + ', ' + parseFloat(history.y).toFixed(NUM_DECIMAL) + ') </span>'
+    $("#source" + sourceIndex + " > #history" + historyIndex).html(newHtmlString);
   };
 
 
@@ -77,7 +119,6 @@ $( document ).ready(function() {
       "outOfFrame" : false,
       "index" : dot_count
     };
-    console.log("new dot, index " + dot_count);
     localizedSources.push(object_history);
     appendSidebar();
 
@@ -107,9 +148,7 @@ $( document ).ready(function() {
         var sourceIndexString = $(this).attr('id');
         var sourceIndex = parseInt(sourceIndexString[sourceIndexString.length-1]);
         var localized_point2 = getDatapoint(relativeX, relativeY, $("#video-box")[0].currentTime);
-        localizedSources[sourceIndex].history.push(localized_point2);
-        editSidebar(sourceIndex);
-
+        addSourceHistoryNoRedundancy(sourceIndex, localized_point2);
         $('.output').html('CSS Position: ' + output);
       }
     });
