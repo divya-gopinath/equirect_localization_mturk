@@ -2,12 +2,24 @@ var localizedSources = [];
 var lastTime = 1;
 
 $( document ).ready(function() {
+  var video = $("#video-box")[0]
+  $('html').keydown(function(e){
+       if (e.keyCode == LEFT_ARROW_KEY) {
+         e.preventDefault();
+         var nearestKeyframe = Math.floor((video.currentTime + 0.01)/PAUSE_THRESHOLD)*PAUSE_THRESHOLD;
+         video.currentTime = nearestKeyframe;
+       } else if (e.keyCode == RIGHT_ARROW_KEY) {
+         e.preventDefault();
+         var nearestKeyframe = Math.ceil((video.currentTime+ 0.01)/PAUSE_THRESHOLD)*PAUSE_THRESHOLD;
+         video.currentTime = nearestKeyframe;
+       };
+    });
   var onTimeUpdate = function() {
-    var time = $("#video-box")[0].currentTime;
+    var time = video.currentTime;
     var roundUpLast = Math.ceil(lastTime);
     var roundDownNow = Math.floor(time);
     if ((roundUpLast == roundDownNow) && (roundUpLast % PAUSE_THRESHOLD== 0)) {
-      $("#video-box")[0].pause();
+      video.pause();
     }
     lastTime = time;
   }
@@ -114,7 +126,7 @@ $( document ).ready(function() {
 
   $("#video-box").click(function(e) {
     e.preventDefault();
-    $("#video-box")[0].pause();
+    video.pause();
     var offset = $(this).offset();
     var width = $(this).width();
     var height = $(this).height();
@@ -158,7 +170,7 @@ $( document ).ready(function() {
         var relativeY = (event.pageY - offset.top)/height;
         var sourceIndexString = $(this).attr('id');
         var sourceIndex = parseInt(sourceIndexString[sourceIndexString.length-1]);
-        var localized_point2 = getDatapoint(relativeX, relativeY, $("#video-box")[0].currentTime);
+        var localized_point2 = getDatapoint(relativeX, relativeY, video.currentTime);
         addSourceHistoryNoRedundancy(sourceIndex, localized_point2);
         $('.output').html('CSS Position: ' + output);
       }
