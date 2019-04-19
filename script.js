@@ -1,13 +1,15 @@
 var localizedSources = [];
-var lastPausedTime = 0;
+var lastTime = 1;
 
 $( document ).ready(function() {
   var onTimeUpdate = function() {
     var time = $("#video-box")[0].currentTime;
-    if (time - lastPausedTime > PAUSE_THRESHOLD) {
-      lastPausedTime = time;
+    var roundUpLast = Math.ceil(lastTime);
+    var roundDownNow = Math.floor(time);
+    if ((roundUpLast == roundDownNow) && (roundUpLast % PAUSE_THRESHOLD== 0)) {
       $("#video-box")[0].pause();
     }
+    lastTime = time;
   }
   $("#video-box").bind('timeupdate', onTimeUpdate);
   // Remove redundancy if one exists (object localized twice on same timestep)
