@@ -3,27 +3,36 @@ var lastTime = 1;
 
 $( document ).ready(function() {
   var video = $("#video-box")[0]
+
+  // Set up keycodes for scrubbing left/right
   $('html').keydown(function(e){
-       if (e.keyCode == LEFT_ARROW_KEY) {
-         e.preventDefault();
-         var nearestKeyframe = Math.floor((video.currentTime + 0.01)/PAUSE_THRESHOLD)*PAUSE_THRESHOLD;
-         video.currentTime = nearestKeyframe;
-       } else if (e.keyCode == RIGHT_ARROW_KEY) {
-         e.preventDefault();
-         var nearestKeyframe = Math.ceil((video.currentTime+ 0.01)/PAUSE_THRESHOLD)*PAUSE_THRESHOLD;
-         video.currentTime = nearestKeyframe;
-       };
-    });
+     if (e.keyCode == LEFT_ARROW_KEY) {
+       e.preventDefault();
+       var nearestKeyframe = Math.floor((video.currentTime + 0.01)/PAUSE_THRESHOLD)*PAUSE_THRESHOLD;
+       video.currentTime = nearestKeyframe;
+       updateDots(nearestKeyframe);
+     } else if (e.keyCode == RIGHT_ARROW_KEY) {
+       e.preventDefault();
+       var nearestKeyframe = Math.ceil((video.currentTime+ 0.01)/PAUSE_THRESHOLD)*PAUSE_THRESHOLD;
+       video.currentTime = nearestKeyframe;
+       updateDots(nearestKeyframe);
+     };
+  });
+
+  // Set time update to pause on keyframes
   var onTimeUpdate = function() {
+    if (video.paused) { return; }
     var time = video.currentTime;
     var roundUpLast = Math.ceil(lastTime);
     var roundDownNow = Math.floor(time);
     if ((roundUpLast == roundDownNow) && (roundUpLast % PAUSE_THRESHOLD== 0)) {
       video.pause();
+      video.currentTime = roundUpLast;
     }
     lastTime = time;
   }
   $("#video-box").bind('timeupdate', onTimeUpdate);
+
   // Remove redundancy if one exists (object localized twice on same timestep)
   var addSourceHistoryNoRedundancy = function(sourceIndex, datapoint) {
     var source = localizedSources[sourceIndex];
@@ -104,6 +113,7 @@ $( document ).ready(function() {
     );
   };
 
+  // Edit the sidebar (i.e. change time) even if current frame has not changed
   var editSidebarWithoutAddition = function(sourceIndex, historyIndex) {
     var source = localizedSources[sourceIndex];
     var history = source.history[historyIndex];
@@ -112,18 +122,20 @@ $( document ).ready(function() {
     $("#source" + sourceIndex + " > #history" + historyIndex).html(newHtmlString);
   };
 
-
-  var getDatapoint = function(relativeX, relativeY, time) {
+  // Return datapoint object from relevant information
+  var getDatapoint = function(relativeX, relativeY, time, dotInfo) {
     var localized_point = {
       "time" : time,
       "x" : relativeX,
       "y" : relativeY,
       "theta" : 2 * Math.PI * relativeX,
-      "phi" : Math.PI * relativeY
+      "phi" : Math.PI * relativeY,
+      "dotInfo" : dotInfo,
     };
     return localized_point;
   }
 
+  // Basic dot functionality
   $("#video-box").click(function(e) {
     e.preventDefault();
     video.pause();
@@ -133,17 +145,6 @@ $( document ).ready(function() {
     var relativeX = (e.pageX - offset.left)/width;
     var relativeY = (e.pageY - offset.top)/height;
     var dot_count = localizedSources.length;
-
-    var localized_point = getDatapoint(relativeX, relativeY, $(this)[0].currentTime);
-    var object_history = {
-      "history" : [ localized_point ],
-      "deleted" : false,
-      "outOfFrame" : false,
-      "name" : null,
-      "index" : dot_count
-    };
-    localizedSources.push(object_history);
-    appendSidebar();
 
     var top_offset = $(this).offset().top - $(window).scrollTop();
     var left_offset = $(this).offset().left - $(window).scrollLeft();
@@ -155,14 +156,26 @@ $( document ).ready(function() {
     var left_perc = left_px / $(this).width() * 100;
     var dot = '<div class="dot" style="top: ' + top_perc + '%; left: ' + left_perc + '%;" id=dot' + dot_count + '>' + (dot_count + 1) + '</div>';
     $(dot).hide().appendTo($(this).parent()).fadeIn(350);
+    var localized_point = getDatapoint(relativeX, relativeY, $(this)[0].currentTime, [top_perc, left_perc]);
+    var object_history = {
+      "history" : [ localized_point ],
+      "deleted" : false,
+      "outOfFrame" : false,
+      "name" : null,
+      "index" : dot_count
+    };
+    localizedSources.push(object_history);
+    appendSidebar();
     $( ".dot" ).draggable({
       containment: ".outfit",
       stop: function( event, ui ) {
         var new_left_perc = parseInt($(this).css("left")) / ($(".outfit").width() / 100) + "%";
         var new_top_perc = parseInt($(this).css("top")) / ($(".outfit").height() / 100) + "%";
         var output = 'Top: ' + parseInt(new_top_perc) + '%, Left: ' + parseInt(new_left_perc) + '%';
-        $(this).css("left", parseInt($(this).css("left")) / ($(".outfit").width() / 100) + "%");
-        $(this).css("top", parseInt($(this).css("top")) / ($(".outfit").height() / 100) + "%");
+        var cssLeft = parseInt($(this).css("left")) / ($(".outfit").width() / 100) + "%";
+        var cssTop = parseInt($(this).css("top")) / ($(".outfit").height() / 100) + "%";
+        $(this).css("left", cssLeft);
+        $(this).css("top", cssTop);
         var offset = $("#video-box").offset();
         var width = $("#video-box").width();
         var height = $("#video-box").height();
@@ -170,7 +183,7 @@ $( document ).ready(function() {
         var relativeY = (event.pageY - offset.top)/height;
         var sourceIndexString = $(this).attr('id');
         var sourceIndex = parseInt(sourceIndexString[sourceIndexString.length-1]);
-        var localized_point2 = getDatapoint(relativeX, relativeY, video.currentTime);
+        var localized_point2 = getDatapoint(relativeX, relativeY, video.currentTime, [cssLeft, cssTop]);
         addSourceHistoryNoRedundancy(sourceIndex, localized_point2);
         $('.output').html('CSS Position: ' + output);
       }
@@ -181,6 +194,19 @@ $( document ).ready(function() {
     // console.log("Left: " + left_perc + "%; Top: " + top_perc + '%;');
     $('.output').html("CSS Position: Left: " + parseInt(left_perc) + "%; Top: " + parseInt(top_perc) + '%;');
   });
+
+  var updateDots = function(currentTime) {
+    $.each(localizedSources, function(sourceIndex, source) {
+      $.each(source.history, function(historyIndex, history) {
+        if (Math.round(history.time) == Math.round(currentTime)) {
+          var dot = $("#dot" + sourceIndex);
+          console.log(dot);
+          dot.css("left", history.dotInfo[0]);
+          dot.css("top", history.dotInfo[1]);
+        }
+      });
+    });
+  };
 });
 
 
