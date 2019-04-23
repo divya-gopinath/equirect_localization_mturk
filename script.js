@@ -1,5 +1,7 @@
 var localizedSources = [];
 var lastTime = 1;
+var highlightState = false;
+var highlightIndex = 0;
 
 $( document ).ready(function() {
   var video = $("#video-box")[0]
@@ -8,14 +10,18 @@ $( document ).ready(function() {
   $('html').keydown(function(e){
      if (e.keyCode == LEFT_ARROW_KEY) {
        e.preventDefault();
+       if (highlightState) { return; }
        var nearestKeyframe = Math.floor((video.currentTime + 0.01)/PAUSE_THRESHOLD)*PAUSE_THRESHOLD;
        video.currentTime = nearestKeyframe;
        updateDots(nearestKeyframe);
      } else if (e.keyCode == RIGHT_ARROW_KEY) {
        e.preventDefault();
+       if (highlightState) { return; }
        var nearestKeyframe = Math.ceil((video.currentTime+ 0.01)/PAUSE_THRESHOLD)*PAUSE_THRESHOLD;
        video.currentTime = nearestKeyframe;
        updateDots(nearestKeyframe);
+     } else if (e.keyCode == DOWN_ARROW_KEY && highlightState) {
+       incrementHighlightState();
      };
   });
 
@@ -29,6 +35,7 @@ $( document ).ready(function() {
     if ((roundUpLast == roundDownNow) && (roundUpLast % PAUSE_THRESHOLD== 0)) {
       video.pause();
       video.currentTime = roundUpLast;
+      beginHighlightState();
     }
     lastTime = time;
   }
@@ -78,8 +85,6 @@ $( document ).ready(function() {
       var sourceIndex = parseInt(sourceIndexString[sourceIndexString.length-1]);
       var source = localizedSources[sourceIndex];
       var dotId = "dot" + sourceIndex;
-      console.log(checkboxType);
-      console.log(source);
       if(checkboxType=="deleted") {
         if (source.deleted) {
           source.deleted = false;
@@ -189,6 +194,40 @@ $( document ).ready(function() {
         }
       });
     });
+  };
+
+  var beginHighlightState = function() {
+    highlightState = true;
+    if (localizedSources.length != 0) {
+      $("#highlightStatus").text(HIGHLIGHT_MODE_TEXT);
+      var dot = $("#dot" + highlightIndex);
+      var sourceBox = $("#source" + highlightIndex);
+      dot.css("box-shadow", CSS_GLOW);
+      var dotColor = dot.css("background-color");
+      sourceBox.css("text-shadow", CSS_TEXT_GLOW + dotColor);
+    };
+  }
+
+  // Update glowing dots and enter/exit highlightState
+  var incrementHighlightState = function() {
+    var dot = $("#dot" + highlightIndex);
+    var sourceBox = $("#source" + highlightIndex);
+    dot.css("box-shadow", "");
+    sourceBox.css("text-shadow", "");
+
+    highlightIndex += 1;
+    if (highlightIndex == localizedSources.length) {
+      highlightIndex = 0;
+      highlightState = false;
+      $("#highlightStatus").text("");
+      return;
+    }
+
+    dot = $("#dot" + highlightIndex);
+    sourceBox = $("#source" + highlightIndex);
+    dot.css("box-shadow", CSS_GLOW);
+    var dotColor = dot.css("background-color");
+    sourceBox.css("text-shadow", CSS_TEXT_GLOW + dotColor);
   };
 });
 
