@@ -1,5 +1,4 @@
 Click==7.0
-Django==1.10
 docutils==0.14
 Flask==1.0.2
 gunicorn==19.9.0
