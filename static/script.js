@@ -2,7 +2,7 @@ var localizedSources = [];
 var lastTime = 1;
 var highlightState = false;
 var highlightIndex = 0;
-var assignmentId = {{ value }};
+var assignmentId = '{{ value }}';
 
 $( document ).ready(function() {
   var video = $("#video-box")[0];
