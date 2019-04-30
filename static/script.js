@@ -14,20 +14,21 @@ $( document ).ready(function() {
 
   // Set up keycodes for scrubbing left/right
   $('html').keydown(function(e){
-     if (e.keyCode == LEFT_ARROW_KEY) {
-       e.preventDefault();
-       if (highlightState) { return; }
+     if (e.keyCode == LEFT_ARROW_KEY && !highlightState) {
        var nearestKeyframe = Math.floor((video.currentTime + 0.01)/PAUSE_THRESHOLD)*PAUSE_THRESHOLD;
        video.currentTime = nearestKeyframe;
        updateDots(nearestKeyframe);
-     } else if (e.keyCode == RIGHT_ARROW_KEY) {
-       e.preventDefault();
-       if (highlightState) { return; }
+     } else if (e.keyCode == RIGHT_ARROW_KEY && !highlightState) {
        var nearestKeyframe = Math.ceil((video.currentTime+ 0.01)/PAUSE_THRESHOLD)*PAUSE_THRESHOLD;
        video.currentTime = nearestKeyframe;
        updateDots(nearestKeyframe);
      } else if (e.keyCode == DOWN_ARROW_KEY && highlightState) {
+       e.preventDefault();
        incrementHighlightState();
+     } else if (e.keyCode == SPACE_KEY && !highlightState && e.target.id != "video-box") {
+       e.preventDefault();
+       if (video.paused) { video.play(); }
+       else { video.pause(); }
      };
   });
 
@@ -91,24 +92,40 @@ $( document ).ready(function() {
       var sourceIndex = parseInt(sourceIndexString[sourceIndexString.length-1]);
       var source = localizedSources[sourceIndex];
       var dotId = "dot" + sourceIndex;
+      var dot = $("#" + dotId);
       if(checkboxType=="deleted") {
         if (source.deleted) {
           source.deleted = false;
           $(this).parent().css("text-decoration", "");
           $(this).parent().css("color", "black");
-          $("#" + dotId).show();
+          dot.show();
         } else {
           source.deleted = true;
           $(this).parent().css("text-decoration", "line-through");
           $(this).parent().css("color", "gray");
-          $("#" + dotId).hide();
+          dot.hide();
         }
       } else if (checkboxType=="outOfFrame") {
-        source.outOfFrame = !source.outOfFrame;
-        if (source.outOfFrame || source.deleted) {
+        var updated = false;
+        $.each(source.history, function(historyIndex, history) {
+          if (history.time == video.currentTime) {
+            history.outOfFrame = !history.outOfFrame;
+            updated = true;
+            if (history.outOfFrame) { dot.hide(); }
+            else { dot.show(); };
+            editSidebarWithoutAddition(sourceIndex, historyIndex);
+            console.log("updated localized data again");
+          }
+        });
+        if (!updated) {
+          var relativeX100String = dot.css("left");
+          var relativeY100String = dot.css("top");
+          var relativeX100 = parseInt(relativeX100String.substring(0, relativeX100String.length -1));
+          var relativeY100 = parseInt(relativeY100String.substring(0, relativeY100String.length -1));
+          source.history.push(getDatapoint(relativeX100/100, relativeY100/100, video.currentTime, true));
+          editSidebarWithAddition(sourceIndex);
+          console.log("updated out of frame at time " + relativeX100 + " " + relativeY100 + " " + video.currentTime);
           $("#" + dotId).hide();
-        } else {
-          $("#" + dotId).show();
         }
       }
     });
@@ -119,29 +136,41 @@ $( document ).ready(function() {
     var source = localizedSources[sourceIndex];
     var historyIndex = source.history.length - 1;
     var lastHistory = source.history[historyIndex];
-    $("#source" + sourceIndex).append(
-      '<br> <span id=history' + historyIndex + '> Relative position to video box at time ' + parseFloat(lastHistory.time).toFixed(2) + ': ' +
-      '(' + parseFloat(lastHistory.x).toFixed(NUM_DECIMAL) + ', ' + parseFloat(lastHistory.y).toFixed(NUM_DECIMAL) + ') </span>'
-    );
+    if (lastHistory.outOfFrame) {
+        $("#source" + sourceIndex).append(
+          '<br> <span id=history' + historyIndex + '> Source went out of frame at time ' + parseFloat(lastHistory.time).toFixed(2) + '</span>'
+        );
+    } else {
+      $("#source" + sourceIndex).append(
+        '<br> <span id=history' + historyIndex + '> Relative position to video box at time ' + parseFloat(lastHistory.time).toFixed(2) + ': ' +
+        '(' + parseFloat(lastHistory.x).toFixed(NUM_DECIMAL) + ', ' + parseFloat(lastHistory.y).toFixed(NUM_DECIMAL) + ') </span>'
+      );
+    }
   };
 
   // Edit the sidebar (i.e. change time) even if current frame has not changed
   var editSidebarWithoutAddition = function(sourceIndex, historyIndex) {
     var source = localizedSources[sourceIndex];
     var history = source.history[historyIndex];
-    var newHtmlString = '<span id=history' + historyIndex + '> Relative position to video box at time ' + parseFloat(history.time).toFixed(2) + ': ' +
-    '(' + parseFloat(history.x).toFixed(NUM_DECIMAL) + ', ' + parseFloat(history.y).toFixed(NUM_DECIMAL) + ') </span>'
+    var newHtmlString;
+    if (history.outOfFrame) {
+      newHtmlString = '<span id=history' + historyIndex + '> Source went out of frame at time ' + parseFloat(history.time).toFixed(2) + '</span>'
+    } else {
+      newHtmlString = '<span id=history' + historyIndex + '> Relative position to video box at time ' + parseFloat(history.time).toFixed(2) + ': ' +
+      '(' + parseFloat(history.x).toFixed(NUM_DECIMAL) + ', ' + parseFloat(history.y).toFixed(NUM_DECIMAL) + ') </span>';
+    };
     $("#source" + sourceIndex + " > #history" + historyIndex).html(newHtmlString);
   };
 
   // Return datapoint object from relevant information
-  var getDatapoint = function(relativeX, relativeY, time, dotInfo) {
+  var getDatapoint = function(relativeX, relativeY, time, outOfFrame) {
     var localized_point = {
       "time" : time,
       "x" : relativeX,
       "y" : relativeY,
       "theta" : 2 * Math.PI * relativeX,
-      "phi" : Math.PI * relativeY
+      "phi" : Math.PI * relativeY,
+      "outOfFrame" : outOfFrame,
     };
     return localized_point;
   }
@@ -160,11 +189,10 @@ $( document ).ready(function() {
     var dot = '<div class="dot" style="top: ' + relativeY * 100 + '%; left: ' + relativeX * 100 + '%;" id=dot' + dot_count + '>' + (dot_count + 1) + '</div>';
     $(dot).hide().appendTo($(this).parent()).fadeIn(350);
     var output = "CSS Position: Left: " + relativeX + "%; Top: " + relativeY + '%;';
-    var localized_point = getDatapoint(relativeX, relativeY, $(this)[0].currentTime);
+    var localized_point = getDatapoint(relativeX, relativeY, $(this)[0].currentTime, false);
     var object_history = {
       "history" : [ localized_point ],
       "deleted" : false,
-      "outOfFrame" : false,
       "name" : null,
       "index" : dot_count
     };
@@ -182,7 +210,7 @@ $( document ).ready(function() {
         $(this).css("top", relativeY * 100 + "%")
         var sourceIndexString = $(this).attr('id');
         var sourceIndex = parseInt(sourceIndexString[sourceIndexString.length-1]);
-        var localized_point2 = getDatapoint(relativeX, relativeY, video.currentTime);
+        var localized_point2 = getDatapoint(relativeX, relativeY, video.currentTime, false);
         addSourceHistoryNoRedundancy(sourceIndex, localized_point2);
       }
     });
@@ -197,6 +225,13 @@ $( document ).ready(function() {
           var dot = $("#dot" + sourceIndex);
           dot.css("left", history.x * 100 + "%");
           dot.css("top", history.y * 100 + "%");
+          console.log("Updated at time " + currentTime + " and dot out of frame is " + history.outOfFrame);
+          if (history.outOfFrame) {
+            dot.hide();
+          } else {
+            dot.show();
+          }
+          return false;
         }
       });
     });
@@ -204,6 +239,7 @@ $( document ).ready(function() {
 
   var beginHighlightState = function() {
     highlightState = true;
+    $("#video-box").removeAttr('controls');
     if (localizedSources.length != 0) {
       $("#highlightStatus").text(HIGHLIGHT_MODE_TEXT);
       var dot = $("#dot" + highlightIndex);
@@ -226,6 +262,7 @@ $( document ).ready(function() {
       highlightIndex = 0;
       highlightState = false;
       $("#highlightStatus").text("");
+      $("#video-box").attr('controls', 'true');
       return;
     }
 

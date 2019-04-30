@@ -30,16 +30,14 @@
         <div class="col-md-3">South</div>
       </div>
     </div>
-    <div>
+    <div id="highlightStatus"></div>
+    </div>
+    <div id="sidebar" class="col-xs-3 sidebar">
       <button class='btn btn-primary' id="finishBtn" type="submit"> Finish tasks </button>
       <form id="submit_form" action="https://workersandbox.mturk.com/mturk/externalSubmit" method="post">
         <input type='hidden' id='localizedSourcesForm' name='localizedSources' value='' />
         <input type='hidden' id='assignmentId' name='assignmentId' value='{{ value }}' />
       </form>
-    </div>
-    <div id="highlightStatus"></div>
-    </div>
-    <div id="sidebar" class="col-xs-3 sidebar">
       <h3> Current localized sources: </h3>
     </div>
 </div>

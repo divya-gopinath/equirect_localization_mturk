@@ -3,6 +3,7 @@ const PAUSE_THRESHOLD = 4;
 const LEFT_ARROW_KEY = 37;
 const RIGHT_ARROW_KEY = 39;
 const DOWN_ARROW_KEY = 40;
+const SPACE_KEY = 32;
 
 const CSS_GLOW = "0px 0px 30px 20px #ffff";
 const CSS_TEXT_GLOW = "2px 2px 5px ";
