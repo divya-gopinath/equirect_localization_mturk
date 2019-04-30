@@ -8,7 +8,7 @@ def home():
 
 @app.route("/continue", methods=['GET', 'POST'])
 def next_page():
-    return render_template("index.html")
+    return render_template("index.html", value=request.form.get('assignmentId', 0))
 
 if __name__ == "__main__":
     app.run()

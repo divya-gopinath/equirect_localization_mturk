@@ -10,6 +10,7 @@
   <h3> Your assignment ID: <span id="assignmentId">{{ value }}</span> </h3>
   Instructions for the task here.
   <form action="/continue" method="post">
+    <input type='hidden' id='assignmentId' name='assignmentId' value='{{ value }}' />
     <button class='btn btn-primary' type="submit"> Next </button>
   </form>
 </body>

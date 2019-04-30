@@ -9,7 +9,6 @@ $( document ).ready(function() {
 
   $( "#finishBtn" ).click(function() {
     $("#localizedSourcesForm").val(JSON.stringify(localizedSources));
-    $("#assignmentIdForm").val($("#assignmentId").text());
     $( "#submit_form" ).submit();
   });
 
