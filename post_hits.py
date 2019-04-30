@@ -8,12 +8,12 @@ print(question)
 
 mturk = boto3.client('mturk', endpoint_url = MTURK_SANDBOX)
 new_hit = mturk.create_hit(
-    Title = 'TRY 2: Can you localize sounds in this video?',
+    Title = 'TRY 3: Can you localize sounds in this video?',
     Description = 'Using 3-D camera feed and two-channel audio, localize the sounds in this video.',
     Keywords = 'video, audio, labelling',
     Reward = '0.0',
     MaxAssignments = 1,
-    LifetimeInSeconds = 172800,
+    LifetimeInSeconds = 17280000,
     AssignmentDurationInSeconds = 600,
     AutoApprovalDelayInSeconds = 14400,
     Question = question,
