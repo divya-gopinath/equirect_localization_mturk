@@ -4,7 +4,7 @@ app = Flask(__name__)
 
 @app.route("/")
 def home():
-    return render_template("intro.html", value=request.args['assignmentId'])
+    return render_template("intro.html", value=request.args.get('assignmentId', 0))
 
 @app.route("/continue", methods=['GET', 'POST'])
 def next_page():
