@@ -2,9 +2,17 @@ var localizedSources = [];
 var lastTime = 1;
 var highlightState = false;
 var highlightIndex = 0;
+var assignmentId = 0;
 
 $( document ).ready(function() {
-  var video = $("#video-box")[0]
+  var video = $("#video-box")[0];
+
+  $( "#finishBtn" ).click(function() {
+    $.post( SUBMIT_ENDPOINT, { sources: localizedSources, assignmentId : assignmentId })
+    .done(function( data ) {
+      alert("Thank you! You may close this window.");
+    });
+  });
 
   // Set up keycodes for scrubbing left/right
   $('html').keydown(function(e){
