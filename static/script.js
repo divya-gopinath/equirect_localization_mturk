@@ -8,10 +8,9 @@ $( document ).ready(function() {
   var video = $("#video-box")[0];
 
   $( "#finishBtn" ).click(function() {
-    $.post( SUBMIT_ENDPOINT, { sources: localizedSources, assignmentId : assignmentId })
-    .done(function( data ) {
-      alert("Thank you! You may close this window.");
-    });
+    $("#localizedSourcesForm").val(JSON.stringify(localizedSources));
+    $("#assignmentIdForm").val(assignmentId);
+    $( "#submit_form" ).submit();
   });
 
   // Set up keycodes for scrubbing left/right
