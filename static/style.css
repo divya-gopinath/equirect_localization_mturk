@@ -6,6 +6,12 @@ html {
   overflow-y: scroll;
 }
 
+.finishBtn {
+  display: flex;
+  justify-content: center;
+  text-align: center;
+}
+
 .sidebar {
   font-family: 'Roboto', sans-serif;
 }
@@ -16,28 +22,18 @@ html {
     height: auto !important;
     padding: none;
 }
+
 video {
   height: auto;
   vertical-align: middle;
 }
+
 .overlay-desc {
-  background: rgba(0,0,0,0.8);
+  background: rgba(255,255,255,0);
   position: absolute;
   top: 0; right: 0; bottom: 2; left: 0;
   display: flex;
   align-items: flex-start;
-  justify-content: center;
-  text-align: center;
-  font-size: 2vw;
-  color: white;
-}
-
-.overlay-desc {
-  background: rgba(0,0,0,0.8);
-  position: absolute;
-  top: 0; right: 0; bottom: 2; left: 0;
-  display: flex;
-  align-items: flex-end;
   justify-content: center;
   text-align: center;
   font-size: 1.5rem;
@@ -49,10 +45,6 @@ body {
   color: white;
   font-size: 1.1rem;
   line-height: 1.7rem;
-}
-
-#highlightStatus {
-  font-size: 2.2rem;
 }
 
 .dot {
