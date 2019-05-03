@@ -121,13 +121,8 @@ $( document ).ready(function() {
           }
         });
         if (!updated) {
-          var relativeX100String = dot.css("left");
-          var relativeY100String = dot.css("top");
-          var relativeX100 = parseInt(relativeX100String.substring(0, relativeX100String.length -1));
-          var relativeY100 = parseInt(relativeY100String.substring(0, relativeY100String.length -1));
-          source.history.push(getDatapoint(relativeX100/100, relativeY100/100, video.currentTime, true));
+          addLastDatapointAgain(sourceIndex, video.currentTime, true);
           editSidebarWithAddition(sourceIndex);
-          console.log("updated out of frame at time " + relativeX100 + " " + relativeY100 + " " + video.currentTime);
           $("#" + dotId).hide();
         }
       }
@@ -163,6 +158,15 @@ $( document ).ready(function() {
       '(' + parseFloat(history.x).toFixed(NUM_DECIMAL) + ', ' + parseFloat(history.y).toFixed(NUM_DECIMAL) + ') </span>';
     };
     $("#source" + sourceIndex + " > #history" + historyIndex).html(newHtmlString);
+  };
+
+  var addLastDatapointAgain = function(sourceIndex, time, outOfFrame) {
+    var dot = $("#dot" + sourceIndex);
+    var relativeX100String = dot[0].style.left;
+    var relativeY100String = dot[0].style.top;
+    var relativeX100 = parseInt(relativeX100String.substring(0, relativeX100String.length -1));
+    var relativeY100 = parseInt(relativeY100String.substring(0, relativeY100String.length -1));
+    localizedSources[sourceIndex].history.push(getDatapoint(relativeX100/100, relativeY100/100, time, outOfFrame));
   };
 
   // Return datapoint object from relevant information
@@ -253,13 +257,27 @@ $( document ).ready(function() {
     };
   }
 
+  // Check if dot has moved during highlight state and added text if not
+  var checkIfMovedHighlightState = function(sourceIndex, time) {
+    var foundFlag = false;
+    $.each(localizedSources[sourceIndex].history, function(historyIndex, history) {
+      if (history.time == time) {
+        foundFlag = true;
+      }
+    });
+    // Otherwise, add datapoint
+    if (foundFlag) { return; }
+    addLastDatapointAgain(sourceIndex, time, false);
+    editSidebarWithAddition(sourceIndex);
+  };
+
   // Update glowing dots and enter/exit highlightState
   var incrementHighlightState = function() {
     var dot = $("#dot" + highlightIndex);
     var sourceBox = $("#source" + highlightIndex);
     dot.css("box-shadow", "");
     sourceBox.css("text-shadow", "");
-
+    checkIfMovedHighlightState(highlightIndex, video.currentTime);
     highlightIndex += 1;
     if (highlightIndex == localizedSources.length) {
       highlightIndex = 0;
