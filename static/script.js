@@ -25,6 +25,9 @@ $( document ).ready(function() {
      } else if (e.keyCode == DOWN_ARROW_KEY && highlightState) {
        e.preventDefault();
        incrementHighlightState();
+     } else if (e.keyCode == UP_ARROW_KEY && highlightState) {
+       e.preventDefault();
+       decrementHighlightState();
      } else if (e.keyCode == SPACE_KEY && !highlightState && e.target.id != "video-box") {
        e.preventDefault();
        if (video.paused) { video.play(); }
@@ -266,6 +269,20 @@ $( document ).ready(function() {
       return;
     }
 
+    dot = $("#dot" + highlightIndex);
+    sourceBox = $("#source" + highlightIndex);
+    dot.css("box-shadow", CSS_GLOW);
+    var dotColor = dot.css("background-color");
+    sourceBox.css("text-shadow", CSS_TEXT_GLOW + dotColor);
+  };
+
+  var decrementHighlightState = function() {
+    if (highlightIndex == 0) { return; }
+    var dot = $("#dot" + highlightIndex);
+    var sourceBox = $("#source" + highlightIndex);
+    dot.css("box-shadow", "");
+    sourceBox.css("text-shadow", "");
+    highlightIndex -= 1;
     dot = $("#dot" + highlightIndex);
     sourceBox = $("#source" + highlightIndex);
     dot.css("box-shadow", CSS_GLOW);
