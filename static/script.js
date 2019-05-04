@@ -6,6 +6,13 @@ var assignmentId = '{{ value }}';
 
 $( document ).ready(function() {
   var video = $("#video-box")[0];
+  $("#rescrubBtn").hide();
+  $("#rescrubBtn").click(function(e){
+    var newTime = video.currentTime - PAUSE_THRESHOLD + 0.0001;
+    video.currentTime = newTime;
+    lastTime = newTime;
+    video.play();
+  });
 
   $( "#finishBtn" ).click(function() {
     $("#localizedSourcesForm").val(JSON.stringify(localizedSources));
@@ -18,6 +25,7 @@ $( document ).ready(function() {
        var nearestKeyframe = Math.floor((video.currentTime + 0.01)/PAUSE_THRESHOLD)*PAUSE_THRESHOLD;
        video.currentTime = nearestKeyframe;
        updateDots(nearestKeyframe);
+       if (highlightState) { video.play(); }
      } else if (e.keyCode == RIGHT_ARROW_KEY && !highlightState) {
        var nearestKeyframe = Math.ceil((video.currentTime+ 0.01)/PAUSE_THRESHOLD)*PAUSE_THRESHOLD;
        video.currentTime = nearestKeyframe;
@@ -77,7 +85,7 @@ $( document ).ready(function() {
     $("#sidebar").append(
       '<br> <div id=' + 'source' + sourceIndex + ' class="sourceBox"> <strong> Source ' + localizedSources.length + ': </strong>' +
       '<input name="objectName" placeholder="Optional object name" class="sourceObjectName"><br>'+
-      '<input type="checkbox" name="outOfFrame" class="sourceOption"> Object not making sound  ' +
+      '<input type="checkbox" name="outOfFrame" class="sourceOption" id=' + 'outOfFrame' + sourceIndex + '> Object not making sound  ' +
       '<input type="checkbox" name="deleted" class="sourceOption">Delete source' +
       '<br>' + '<span id="history0"> Relative position to video box at time ' + parseFloat(source.history[0].time).toFixed(NUM_DECIMAL) + ': ' +
       '(' + parseFloat(source.history[0].x).toFixed(NUM_DECIMAL) + ', ' + parseFloat(source.history[0].y).toFixed(NUM_DECIMAL) + ') </span> </div>'
@@ -227,17 +235,22 @@ $( document ).ready(function() {
 
   var updateDots = function(currentTime) {
     $.each(localizedSources, function(sourceIndex, source) {
+      var found = false;
+      var dot = $("#dot" + sourceIndex);
+      if (source.history[0].time > currentTime) { dot.hide(); }
       $.each(source.history, function(historyIndex, history) {
         if (history.time == currentTime) {
-          var dot = $("#dot" + sourceIndex);
           dot.css("left", history.x * 100 + "%");
           dot.css("top", history.y * 100 + "%");
-          console.log("Updated at time " + currentTime + " and dot out of frame is " + history.outOfFrame);
+          var outOfFrame = $("#outOfFrame" + sourceIndex)
           if (history.outOfFrame) {
+            outOfFrame.prop("checked", true);
             dot.hide();
           } else {
+            outOfFrame.prop("checked", false);
             dot.show();
           }
+          found = true;
           return false;
         }
       });
@@ -245,16 +258,16 @@ $( document ).ready(function() {
   };
 
   var beginHighlightState = function() {
+    if (localizedSources.length == 0) { return; }
     highlightState = true;
     $("#video-box").removeAttr('controls');
-    if (localizedSources.length != 0) {
-      $("#highlightStatus").text(HIGHLIGHT_MODE_TEXT);
-      var dot = $("#dot" + highlightIndex);
-      var sourceBox = $("#source" + highlightIndex);
-      dot.css("box-shadow", CSS_GLOW);
-      var dotColor = dot.css("background-color");
-      sourceBox.css("text-shadow", CSS_TEXT_GLOW + dotColor);
-    };
+    $("#rescrubBtn").show();
+    $("#highlightStatus").text(HIGHLIGHT_MODE_TEXT);
+    var dot = $("#dot" + highlightIndex);
+    var sourceBox = $("#source" + highlightIndex);
+    dot.css("box-shadow", CSS_GLOW);
+    var dotColor = dot.css("background-color");
+    sourceBox.css("text-shadow", CSS_TEXT_GLOW + dotColor);
   }
 
   // Check if dot has moved during highlight state and added text if not
@@ -271,6 +284,30 @@ $( document ).ready(function() {
     editSidebarWithAddition(sourceIndex);
   };
 
+  // Find next sourceIndex that isn't out of frame at given time
+  var nextInFrameSourceIndex = function(originalSourceIndex)  {
+    var nextIndex = originalSourceIndex;
+    $.each(localizedSources, function(sourceIndex, source) {
+      if (sourceIndex > originalSourceIndex && !$("#outOfFrame" + sourceIndex).prop("checked") && !source.deleted) {
+        nextIndex = sourceIndex;
+        return false;
+      };
+    });
+    nextIndex = nextIndex == originalSourceIndex ? localizedSources.length : nextIndex;
+    return nextIndex;
+  }
+
+  // Find previous sourceIndex that isn't out of frame at given time
+  var previousInFrameSourceIndex = function(originalSourceIndex)  {
+    var nextIndex = originalSourceIndex;
+    $.each(localizedSources, function(sourceIndex, source) {
+      if (sourceIndex < originalSourceIndex && !$("#outOfFrame" + sourceIndex).prop("checked") && !source.deleted) {
+        nextIndex = sourceIndex;
+      };
+    });
+    return nextIndex;
+  }
+
   // Update glowing dots and enter/exit highlightState
   var incrementHighlightState = function() {
     var dot = $("#dot" + highlightIndex);
@@ -278,11 +315,12 @@ $( document ).ready(function() {
     dot.css("box-shadow", "");
     sourceBox.css("text-shadow", "");
     checkIfMovedHighlightState(highlightIndex, video.currentTime);
-    highlightIndex += 1;
+    highlightIndex = nextInFrameSourceIndex(highlightIndex);
     if (highlightIndex == localizedSources.length) {
       highlightIndex = 0;
       highlightState = false;
       $("#highlightStatus").text("");
+      $("#rescrubBtn").hide();
       $("#video-box").attr('controls', 'true');
       return;
     }
@@ -300,7 +338,7 @@ $( document ).ready(function() {
     var sourceBox = $("#source" + highlightIndex);
     dot.css("box-shadow", "");
     sourceBox.css("text-shadow", "");
-    highlightIndex -= 1;
+    highlightIndex = previousInFrameSourceIndex(highlightIndex);
     dot = $("#dot" + highlightIndex);
     sourceBox = $("#source" + highlightIndex);
     dot.css("box-shadow", CSS_GLOW);

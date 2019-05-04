@@ -6,8 +6,11 @@ html {
   overflow-y: scroll;
 }
 
-.finishBtn {
+#finishBtn {
   display: flex;
+  margin: 0 auto;
+  width: 50%;
+  align-items: center;
   justify-content: center;
   text-align: center;
 }
