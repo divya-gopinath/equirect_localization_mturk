@@ -33,7 +33,7 @@
     <br>
     <button class='btn btn-primary' id="finishBtn" type="submit"> Finish task </button>
     </div>
-    <div id="sidebar" class="col-xs-3 sidebar">
+    <div id="sidebarOverlay" class="col-xs-3 sidebar">
       <br>
       <div id="highlightStatus"> </div>
       <button class='btn btn-primary' id='rescrubBtn'> Replay previous keyframe </button>
@@ -41,7 +41,12 @@
         <input type='hidden' id='localizedSourcesForm' name='localizedSources' value='' />
         <input type='hidden' id='assignmentId' name='assignmentId' value='{{ value }}' />
       </form>
-      <h3> Current localized sources: </h3>
+      <div id="sidebar">
+        <h3> Active sources: </h3>
+      </div>
+      <div id="sidebarInactive">
+        <h3> Inactive sources: </h3>
+      </div>
     </div>
 </div>
 

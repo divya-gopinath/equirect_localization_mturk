@@ -109,11 +109,13 @@ $( document ).ready(function() {
           source.deleted = false;
           $(this).parent().css("text-decoration", "");
           $(this).parent().css("color", "black");
+          $(this).parent().appendTo("#sidebar");
           dot.show();
         } else {
           source.deleted = true;
           $(this).parent().css("text-decoration", "line-through");
           $(this).parent().css("color", "gray");
+          $(this).parent().appendTo("#sidebarInactive");
           dot.hide();
         }
       } else if (checkboxType=="outOfFrame") {
@@ -122,8 +124,14 @@ $( document ).ready(function() {
           if (history.time == video.currentTime) {
             history.outOfFrame = !history.outOfFrame;
             updated = true;
-            if (history.outOfFrame) { dot.hide(); }
-            else { dot.show(); };
+            if (history.outOfFrame) {
+              dot.hide();
+              $("#source" + sourceIndex).appendTo("#sidebarInactive");
+            }
+            else {
+              dot.show();
+              $("#source" + sourceIndex).appendTo("#sidebar");
+            };
             editSidebarWithoutAddition(sourceIndex, historyIndex);
             console.log("updated localized data again");
           }
@@ -132,6 +140,7 @@ $( document ).ready(function() {
           addLastDatapointAgain(sourceIndex, video.currentTime, true);
           editSidebarWithAddition(sourceIndex);
           $("#" + dotId).hide();
+          $("#source" + sourceIndex).appendTo("#sidebarInactive");
         }
       }
     });
@@ -160,7 +169,7 @@ $( document ).ready(function() {
     var history = source.history[historyIndex];
     var newHtmlString;
     if (history.outOfFrame) {
-      newHtmlString = '<span id=history' + historyIndex + '> Source went out of frame at time ' + parseFloat(history.time).toFixed(2) + '</span>'
+      newHtmlString = '<span id=history' + historyIndex + '> Source went out of frame at time ' + parseFloat(history.time).toFixed(2) + '</span>';
     } else {
       newHtmlString = '<span id=history' + historyIndex + '> Relative position to video box at time ' + parseFloat(history.time).toFixed(2) + ': ' +
       '(' + parseFloat(history.x).toFixed(NUM_DECIMAL) + ', ' + parseFloat(history.y).toFixed(NUM_DECIMAL) + ') </span>';
