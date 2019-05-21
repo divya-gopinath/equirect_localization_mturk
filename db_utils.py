@@ -5,7 +5,7 @@ def is_returning_worker(conn, workerId):
     """
     Returns boolean value indicating whether worker has attempted a task before.
     """
-    query = "SELECT * FROM workers WHERE worker_id = '{}'".format(worker_id)
+    query = "SELECT * FROM workers WHERE worker_id = '{}'".format(workerId)
     return len(conn.execute(query).fetchall()) != 0
 
 
@@ -13,7 +13,7 @@ def check_worker_qualified(conn, workerId):
   """
   Returns boolean value indicating whether worker is qualified or not.
   """
-  query = "SELECT qualified FROM workers WHERE worker_id = '{}'".format(worker_id)
+  query = "SELECT qualified FROM workers WHERE worker_id = '{}'".format(workerId)
   result = conn.execute(query).fetchall()
   return (len(result) != 0) and bool(result[0][0])
 
@@ -22,7 +22,7 @@ def add_new_worker(conn, workerId):
     Adds new worker to SQL db.
     Returns true if done successfully.
     """
-    query = "INSERT INTO workers VALUES('{}', 0, 0)".format(worker_id)
+    query = "INSERT INTO workers VALUES('{}', 0, 0)".format(workerId)
     conn.execute(query)
     conn.commit()
     return True;
@@ -31,7 +31,7 @@ def completed_video_ids(conn, workerId):
     """
     Given a worker ID, returns the list of complete videos.
     """
-    query = "SELECT video_id FROM completed_tasks WHERE worker_id = '{}'".format(worker_id)
+    query = "SELECT video_id FROM completed_tasks WHERE worker_id = '{}'".format(workerId)
     return [idx[0] for idx in conn.execute(query).fetchall()]
 
 def insert_completed_hit(conn, workerId, videoId):
@@ -42,6 +42,10 @@ def get_next_video(conn, workerId):
     Returns the (videoId, videoURL, validation) tupple of next video to watch.
     ID should be a validation ID if in validation stage.
     """
+    if not is_returning_worker(conn, workerId):
+        console.log("NEW USER!! Inserting...")
+        add_new_worker(conn, workerId)
+
     query = """
     SELECT
         a.video_id as 'video_id',
