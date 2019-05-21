@@ -13,7 +13,7 @@ app = Flask(__name__)
 def home():
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
-    worker_id = 'RGXO9A03YU29WRR2SQMI'
+    worker_id = request.args.get('workerId', 'RGXO9A03YU29WRR2SQMI')
     videoId, videoURL, validation = get_next_video(conn, worker_id)
     if videoId is None:
         return "Sorry, you have localized all of our videos. Thank you!"

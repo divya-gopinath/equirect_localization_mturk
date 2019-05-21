@@ -23,6 +23,7 @@
   <script>
     $( document ).ready(function() {
       var validation = {{ value.validation }};
+      console.log("Your workerID is {{ value.workerId }} and validation is " + validation);
       $("#instructions").text(validation ? VALIDATION_INTRO_TEXT : REGULAR_INTRO_TEXT);
     });
   </script>
