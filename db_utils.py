@@ -43,7 +43,7 @@ def get_next_video(conn, workerId):
     ID should be a validation ID if in validation stage.
     """
     if not is_returning_worker(conn, workerId):
-        console.log("NEW USER!! Inserting...")
+        print("NEW USER!! Inserting...")
         add_new_worker(conn, workerId)
 
     query = """
