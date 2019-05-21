@@ -8,7 +8,6 @@ def create_connection(db_file):
 
     sql_create_worker_table = """CREATE TABLE IF NOT EXISTS workers (
                                     worker_id varchar(1023),
-                                    qualified bit NOT NULL,
                                     number_hits_since_validation integer NOT NULL
                                 );"""
 

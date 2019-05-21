@@ -12,8 +12,7 @@ app = Flask(__name__)
 @app.route("/")
 def home():
     conn = sqlite3.connect(DB_PATH)
-    c = conn.cursor()
-    worker_id = request.args.get('workerId', 'RGXO9A03YU29WRR2SQMI')
+    worker_id = request.args.get('workerId', 'FAKE_USER')
     videoId, videoURL, validation = get_next_video(conn, worker_id)
     if videoId is None:
         return "Sorry, you have localized all of our videos. Thank you!"
@@ -42,6 +41,14 @@ def validate_sources():
     sources = json.loads(request.args.get('localizedSources'))
     # TODO -- run validation algorithm
     return "true"
+
+@app.route("/displaydata", methods=['GET'])
+def display_data():
+    conn = sqlite3.connect(DB_PATH)
+    result = pretty_print_all(conn)
+    conn.close()
+    return result
+
 
 if __name__ == "__main__":
     app.run()

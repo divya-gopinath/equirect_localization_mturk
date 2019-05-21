@@ -1,5 +1,6 @@
 import sqlite3
 import random
+from prettytable import PrettyTable
 
 def is_returning_worker(conn, workerId):
     """
@@ -22,7 +23,7 @@ def add_new_worker(conn, workerId):
     Adds new worker to SQL db.
     Returns true if done successfully.
     """
-    query = "INSERT INTO workers VALUES('{}', 0, 0)".format(workerId)
+    query = "INSERT INTO workers VALUES('{}', 0)".format(workerId)
     conn.execute(query)
     conn.commit()
     return True;
@@ -90,19 +91,22 @@ def get_next_video(conn, workerId):
             return (None, None, None)
     return random.choice(new_videos)
 
-
-
-if __name__ == '__main__':
-    # test out functions
-    try:
-        conn = sqlite3.connect("C:/Users/divya/Documents/UROP/equirect_localization_mturk/db/localization.db")
-        c = conn.cursor()
-        worker_id = 'RGXO9A03YU29WRR2SQMI'
-        print(get_next_video(conn, worker_id))
-    except sqlite3.Error as e:
-        print(e)
-    finally:
-        conn.close()
+def pretty_print_all(conn):
+    query = "SELECT * FROM workers"
+    query2 = "SELECT * FROM video_urls"
+    query3 = "SELECT * FROM completed_tasks"
+    workers = conn.execute(query).fetchall()
+    video_urls = conn.execute(query2).fetchall()
+    completed_tasks = conn.execute(query3).fetchall()
+    rows = [workers, completed_tasks, video_urls]
+    html_strings = []
+    headers = [['worker_id', 'number hits since validation'], ['worker_id', 'video_id', 'timestamp'], ['video_id', 'video_url', 'validation']]
+    for ix, header in enumerate(headers):
+        table = PrettyTable(header)
+        for row in rows[ix]:
+            table.add_row(row)
+        html_strings.append(table.get_html_string())
+    return '<br>'.join(html_strings)
 
 
 
