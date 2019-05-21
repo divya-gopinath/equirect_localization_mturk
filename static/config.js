@@ -12,6 +12,9 @@ const CSS_TEXT_GLOW = "2px 2px 5px ";
 const HIGHLIGHT_MODE_TEXT = "You are in highlight mode. Update the point in question and press the down arrow key. You can scrub back to the previous keyframe with the left arrow key. You may add new sources at the end.";
 const SUBMIT_ENDPOINT = "https://workersandbox.mturk.com/mturk/externalSubmit/";
 
+const VALIDATION_INTRO_TEXT = "This is a validation assignment. You will only receive compensation for this task after sources have been localized correctly. Thank you for your patience!";
+const REGULAR_INTRO_TEXT = "This a regular task, and please follow the instructions below!";
+
 var randomColor = function() {
   return '#'+Math.floor(Math.random()*16777215).toString(16);
 }

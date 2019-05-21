@@ -2,7 +2,6 @@ var localizedSources = [];
 var lastTime = 1;
 var highlightState = false;
 var highlightIndex = 0;
-var assignmentId = '{{ value }}';
 
 $( document ).ready(function() {
   var video = $("#video-box")[0];
@@ -16,7 +15,13 @@ $( document ).ready(function() {
 
   $( "#finishBtn" ).click(function() {
     $("#localizedSourcesForm").val(JSON.stringify(localizedSources));
-    $( "#submit_form" ).submit();
+    if (validation) {
+      $.get( "/validate", { videoURL : videoURL, localizedSources : JSON.stringify(localizedSources)} )
+      .done(function( data ) {
+        alert( "Data Loaded: " + data );
+      })
+    };
+    //$( "#submit_form" ).submit();
   });
 
   // Set up keycodes for scrubbing left/right

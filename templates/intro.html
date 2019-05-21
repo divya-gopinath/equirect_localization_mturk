@@ -2,15 +2,35 @@
 <html>
 <head>
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+  <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js" type="text/javascript"></script>
+  <script src="{{ url_for('static', filename='config.js') }}"></script>
 </head>
 <body>
-  <h1> Title text here </h1>
-  <h3> Your assignment ID: <span id="assignmentId">{{ value }}</span> </h3>
-  Instructions for the task here.
+  <h1> Thank you for accepting this HIT! </h1>
+  <h3> Your assignment ID: <span id="assignmentId">{{ value.assignmentId }}</span> </h3>
+  <div id="instructions">
+  </div>
+  <strong> Instructions: </strong>
+  Your task is to label sound sources in a 3-D video feed. The video is slightly distorted because it is showing all events happening around the camera.
+  You should put on two-channel headphones to listen to the audio that plays along.
+  <ol>
+    <li> Tag a source by clicking on it, and drag around the dots that are created until you are happy with your annotation.
+    <li> You can press space (or use the button controls) to play/pause the video.
+    <li> You will NOT need to manually stop the video to tag a source. The video will pause automatically in timed increments, at which point you can review your sources and modify or add as necessary.
+  </ol>
+  <script>
+    $( document ).ready(function() {
+      var validation = {{ value.validation }};
+      $("#instructions").text(validation ? VALIDATION_INTRO_TEXT : REGULAR_INTRO_TEXT);
+    });
+  </script>
   <form action="/continue" method="post">
-    <input type='hidden' id='assignmentId' name='assignmentId' value='{{ value }}' />
+    <input type='hidden' id='assignmentId' name='assignmentId' value='{{ value.assignmentId }}' />
+    <input type='hidden' id='videoId' name='videoId' value='{{ value.videoId }}' />
+    <input type='hidden' id='videoURL' name='videoURL' value='{{ value.videoURL }}' />
+    <input type='hidden' id='validation' name='validation' value='{{ value.validation }}' />
     <button class='btn btn-primary' type="submit"> Next </button>
   </form>
 </body>

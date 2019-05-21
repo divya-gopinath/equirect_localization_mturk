@@ -3,23 +3,29 @@
 <head>
 <link href='https://fonts.googleapis.com/css?family=Roboto:700,400' rel='stylesheet' type='text/css'>
 <link href='https://fonts.googleapis.com/css?family=Gafata|Open+Sans:300' rel='stylesheet' type='text/css'>
+<link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
 <link href="https://vjs.zencdn.net/7.4.1/video-js.css" rel="stylesheet">
 
+<script>
+  var assignmentId = {{ value.assignmentId }};
+  var videoId = {{ value.videoId }};
+  var validation = {{ value.validation }};
+  var videoURL = "{{ value.videoURL }}";
+</script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js" type="text/javascript"></script>
 <script src='https://vjs.zencdn.net/7.4.1/video.js'></script>
 <script src="{{ url_for('static', filename='config.js') }}"></script>
 <script src="{{ url_for('static', filename='script.js') }}"></script>
-
 </head>
 <body>
 
 <div class="row">
   <div class="video-container col-xs-9">
     <video width="400" id="video-box" class='video-js' controls>
-      <source src="https://www.dl.dropboxusercontent.com/s/eirjhecnnnx3tqr/3_19_19_synced_Large.mp4" type="video/mp4">
+      <source src="{{ value.videoURL }}" type="video/mp4">
       Your browser does not support HTML5 video.
     </video>
     <div class="overlay-desc">
@@ -39,7 +45,7 @@
       <button class='btn btn-primary' id='rescrubBtn'> Replay previous keyframe </button>
       <form id="submit_form" action="https://workersandbox.mturk.com/mturk/externalSubmit" method="post">
         <input type='hidden' id='localizedSourcesForm' name='localizedSources' value='' />
-        <input type='hidden' id='assignmentId' name='assignmentId' value='{{ value }}' />
+        <input type='hidden' id='assignmentId' name='assignmentId' value='{{ value[1] }}' />
       </form>
       <div id="sidebar">
         <h3> Active sources: </h3>
