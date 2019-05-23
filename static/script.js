@@ -142,10 +142,16 @@ $( document ).ready(function() {
           }
         });
         if (!updated) {
-          addLastDatapointAgain(sourceIndex, video.currentTime, true);
+          var currOutOfFrame = $(this).prop('checked');
+          addLastDatapointAgain(sourceIndex, video.currentTime, currOutOfFrame);
           editSidebarWithAddition(sourceIndex);
-          $("#" + dotId).hide();
-          $("#source" + sourceIndex).appendTo("#sidebarInactive");
+          if (currOutOfFrame) {
+            $("#" + dotId).hide();
+            $("#source" + sourceIndex).appendTo("#sidebarInactive");
+          } else {
+            $("#" + dotId).show();
+            $("#source" + sourceIndex).appendTo("#sidebar");
+          }
         }
       }
     });

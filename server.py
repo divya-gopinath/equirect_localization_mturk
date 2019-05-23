@@ -39,7 +39,7 @@ def next_page():
 def validate_sources():
     videoURL = request.args.get('videoURL')
     sources = json.loads(request.args.get('localizedSources'))
-    # TODO -- run validation algorithm
+    print(sources)
     return "true"
 
 @app.route("/displaydata", methods=['GET'])
@@ -47,6 +47,7 @@ def display_data():
     conn = sqlite3.connect(DB_PATH)
     result = pretty_print_all(conn)
     conn.close()
+
     return result
 
 
