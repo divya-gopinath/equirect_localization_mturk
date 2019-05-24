@@ -1,5 +1,6 @@
 import math
 import numpy as np
+from scipy.optimize import linear_sum_assignment
 
 def _c(ca,i,j,p,q):
 
@@ -98,31 +99,45 @@ def frdist(p,q):
     return dist
 
 def create_distance_matrix(test, truth):
-    pass
+    """
+    Populate cost matrix.
+    If two curves to be compared are not the same length,
+    pad smaller one with last value.
+    """
+    cost = np.full((len(test), len(truth)), np.inf)
+    for test_ix, test_curve in enumerate(np.array(test)):
+        for truth_ix, truth_curve in enumerate(np.array(truth)):
+            if len(test_curve) < len(truth_curve):
+                last_el = len(test_curve)[-1]
+                for _ in range(len(test_curve), len(truth_curve)):
+                    len(test_curve).append(last_el)
+            elif len(truth_curve) < len(test_curve):
+                last_el = len(truth_curve)[-1]
+                for _ in range(len(truth_curve), len(test_curve)):
+                    len(truth_curve).append(last_el)
+            assert(len(test_curve) == len(truth_curve))
+            cost[test_ix][truth_ix] = frdist(test_curve.tolist(), truth_curve.tolist())
+    return cost
 
 def parse_labels_json(sources):
     curves_list = []
     for source in sources:
-        if source.deleted:
+        if source['deleted']:
             continue
         curve = []
-        for pt in source.history:
-            if not pt.outOfFrame:
-                curve.append([pt.x, pt.y, pt.time])
+        for pt in source['history']:
+            if not pt['outOfFrame']:
+                curve.append([pt['x'], pt['y'], pt['time']])
             else:
                 curves_list.append(curve)
                 curve = []
+        if len(curve) != 0:
+            curves_list.append(curve)
     return curves_list
 
+def hungarian_validate(test, truth):
+    cost = create_distance_matrix(test, truth)
+    row_ind, col_ind = linear_sum_assignment(cost)
+    value = cost[row_ind, col_ind].sum()
+    return value
 
-
-
-[
-    {'history':
-     [{'time': 0, 'x': 0.3092145949288806, 'y': 0.4146418844845405, 'theta': 1.94285259962263, 'phi': 1.3026358981672599, 'outOfFrame': False},
-     {'time': 4, 'x': 0.1978973407544836, 'y': 0.7805947598061236, 'theta': 1.2434256637584833, 'phi': 2.452310762837607, 'outOfFrame': False},
-      {'time': 8, 'x': 0.3374856436080926, 'y': 0.3455349037371171, 'theta': 2.1204848373024134, 'phi': 1.0855299151393834, 'outOfFrame': False}
-     ], 'deleted': False, 'name': None, 'index': 0},
-    {'history': [{'time': 0, 'x': 0.6475837088081986, 'y': 0.34239367733950693, 'theta': 4.068888444352537, 'phi': 1.075661461365389, 'outOfFrame': False}, {'time': 4, 'x': 0.64, 'y': 0.34, 'theta': 4.0212385965949355, 'phi': 1.0681415022205298, 'outOfFrame': False}, {'time': 8, 'x': 0.6944076331831434, 'y': 0.3690941017191932, 'theta': 4.363091838009678, 'phi': 1.1595433184443413, 'outOfFrame': False}], 'deleted': False, 'name': None, 'index': 1},
-    {'history': [{'time': 8, 'x': 0.5141796978531672, 'y': 0.6188216003292005, 'theta': 3.230686322801059, 'phi': 1.9440853934768956, 'outOfFrame': False}], 'deleted': False, 'name': None, 'index': 2}
-]
